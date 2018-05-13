@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
@@ -17,13 +16,18 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Threadsafe
  */
 public class Catalog {
+    private Map<String, Integer> nameToTidLookup;
+    private Map<Integer, DbFile> tidToTableLookup;
+    private Map<Integer, String> pkLookup;
 
     /**
      * Constructor.
      * Creates a new, empty catalog.
      */
     public Catalog() {
-        // some code goes here
+        nameToTidLookup = new HashMap<>();
+        tidToTableLookup = new HashMap<>();
+        pkLookup = new HashMap<>();
     }
 
     /**
@@ -37,6 +41,12 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        if (name == null) {
+            throw new IllegalArgumentException();
+        }
+        nameToTidLookup.put(name, file.getId());
+        tidToTableLookup.put(file.getId(), file);
+        pkLookup.put(file.getId(), pkeyField);
     }
 
     public void addTable(DbFile file, String name) {
@@ -59,8 +69,11 @@ public class Catalog {
      * @throws NoSuchElementException if the table doesn't exist
      */
     public int getTableId(String name) throws NoSuchElementException {
-        // some code goes here
-        return 0;
+        if (nameToTidLookup.containsKey(name)) {
+            return nameToTidLookup.get(name);
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
     /**
@@ -71,7 +84,11 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if (tidToTableLookup.containsKey(tableid)) {
+            return tidToTableLookup.get(tableid).getTupleDesc();
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
     /**
@@ -82,27 +99,36 @@ public class Catalog {
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if (tidToTableLookup.containsKey(tableid)) {
+            return tidToTableLookup.get(tableid);
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
     public String getPrimaryKey(int tableid) {
-        // some code goes here
-        return null;
+        return pkLookup.get(tableid);
     }
 
     public Iterator<Integer> tableIdIterator() {
-        // some code goes here
-        return null;
+        return tidToTableLookup.keySet().iterator();
     }
 
     public String getTableName(int id) {
         // some code goes here
+        for (Map.Entry<String, Integer> item : nameToTidLookup.entrySet()) {
+            if (item.getValue() == id) {
+                return item.getKey();
+            }
+        }
         return null;
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
-        // some code goes here
+        nameToTidLookup = new HashMap<>();
+        tidToTableLookup = new HashMap<>();
+        pkLookup = new HashMap<>();
     }
     
     /**
