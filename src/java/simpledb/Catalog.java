@@ -17,6 +17,7 @@ import java.util.*;
  */
 public class Catalog {
     private Map<String, Integer> nameToTidLookup;
+    private Map<Integer, String> tidToNameLookup;
     private Map<Integer, DbFile> tidToTableLookup;
     private Map<Integer, String> pkLookup;
 
@@ -26,6 +27,7 @@ public class Catalog {
      */
     public Catalog() {
         nameToTidLookup = new HashMap<>();
+        tidToNameLookup = new HashMap<>();
         tidToTableLookup = new HashMap<>();
         pkLookup = new HashMap<>();
     }
@@ -45,6 +47,7 @@ public class Catalog {
             throw new IllegalArgumentException();
         }
         nameToTidLookup.put(name, file.getId());
+        tidToNameLookup.put(file.getId(), name);
         tidToTableLookup.put(file.getId(), file);
         pkLookup.put(file.getId(), pkeyField);
     }
@@ -115,18 +118,13 @@ public class Catalog {
     }
 
     public String getTableName(int id) {
-        // some code goes here
-        for (Map.Entry<String, Integer> item : nameToTidLookup.entrySet()) {
-            if (item.getValue() == id) {
-                return item.getKey();
-            }
-        }
-        return null;
+        return tidToNameLookup.get(id);
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
         nameToTidLookup = new HashMap<>();
+        tidToNameLookup = new HashMap<>();
         tidToTableLookup = new HashMap<>();
         pkLookup = new HashMap<>();
     }
