@@ -1,5 +1,6 @@
 package simpledb;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /** Unique identifier for HeapPage objects. */
@@ -75,4 +76,8 @@ public class HeapPageId implements PageId {
         return data;
     }
 
+    @Override
+    public String toString() {
+        return Arrays.toString(serialize());
+    }
 }

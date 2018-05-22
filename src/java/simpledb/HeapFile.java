@@ -77,7 +77,8 @@ public class HeapFile implements DbFile {
 
         Page page = null;
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-            raf.read(bytes, offset, pageSize);
+            raf.seek(offset);
+            raf.read(bytes);
             // adapt to HeapPageId
             HeapPageId hpi = new HeapPageId(pid.getTableId(),
                                             pid.getPageNumber());
