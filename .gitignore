@@ -3,3 +3,6 @@ bin/
 *.iml
 *.class
 simpledb.jar
+/bin/
+.classpath
+.project
