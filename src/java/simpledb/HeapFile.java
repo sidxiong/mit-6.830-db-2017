@@ -1,7 +1,12 @@
 package simpledb;
 
-import java.io.*;
-import java.util.*;
+import simpledb.iterator.DbFileIterator;
+import simpledb.iterator.HeapFileIterator;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
 
 /**
  * HeapFile is an implementation of a DbFile that stores a collection of tuples
@@ -15,6 +20,10 @@ import java.util.*;
  */
 public class HeapFile implements DbFile {
 
+    private final int id;
+    private File file;
+    private TupleDesc td;
+
     /**
      * Constructs a heap file backed by the specified file.
      * 
@@ -23,7 +32,9 @@ public class HeapFile implements DbFile {
      *            file.
      */
     public HeapFile(File f, TupleDesc td) {
-        // some code goes here
+        this.file = f;
+        this.td = td;
+        this.id = f.getAbsolutePath().hashCode();
     }
 
     /**
@@ -32,8 +43,7 @@ public class HeapFile implements DbFile {
      * @return the File backing this HeapFile on disk.
      */
     public File getFile() {
-        // some code goes here
-        return null;
+        return file;
     }
 
     /**
@@ -41,13 +51,13 @@ public class HeapFile implements DbFile {
      * you will need to generate this tableid somewhere to ensure that each
      * HeapFile has a "unique id," and that you always return the same value for
      * a particular HeapFile. We suggest hashing the absolute file name of the
-     * file underlying the heapfile, i.e. f.getAbsoluteFile().hashCode().
+     * file underlying the heapfile, i.e. file.getAbsoluteFile().hashCode().
      * 
      * @return an ID uniquely identifying this HeapFile.
      */
     public int getId() {
-        // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        // DbFile id === Table id
+        return id;
     }
 
     /**
@@ -56,14 +66,27 @@ public class HeapFile implements DbFile {
      * @return TupleDesc of this DbFile.
      */
     public TupleDesc getTupleDesc() {
-        // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return td;
     }
 
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
-        // some code goes here
-        return null;
+        int    pageSize = BufferPool.getPageSize();
+        int    offset   = pid.getPageNumber() * pageSize;
+        byte[] bytes    = new byte[pageSize];
+
+        Page page = null;
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+            raf.read(bytes, offset, pageSize);
+            // adapt to HeapPageId
+            HeapPageId hpi = new HeapPageId(pid.getTableId(),
+                                            pid.getPageNumber());
+            page = new HeapPage(hpi, bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return page;
     }
 
     // see DbFile.java for javadocs
@@ -77,7 +100,7 @@ public class HeapFile implements DbFile {
      */
     public int numPages() {
         // some code goes here
-        return 0;
+        return (int) file.length() / BufferPool.getPageSize();
     }
 
     // see DbFile.java for javadocs
@@ -99,7 +122,7 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public DbFileIterator iterator(TransactionId tid) {
         // some code goes here
-        return null;
+        return new HeapFileIterator(this, tid);
     }
 
 }
