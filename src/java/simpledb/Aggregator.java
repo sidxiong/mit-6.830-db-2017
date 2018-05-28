@@ -81,5 +81,8 @@ public interface Aggregator extends Serializable {
      * @see simpledb.TupleIterator for a possible helper
      */
     public OpIterator iterator();
-    
+
+    public TupleDesc aggregatedTupleDesc();
+
+    public void clear();
 }
