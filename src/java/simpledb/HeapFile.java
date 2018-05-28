@@ -1,8 +1,5 @@
 package simpledb;
 
-import simpledb.iterator.DbFileIterator;
-import simpledb.iterator.HeapFileIterator;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;

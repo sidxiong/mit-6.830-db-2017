@@ -1,8 +1,4 @@
-package simpledb.iterator;
-
-import simpledb.DbException;
-import simpledb.TransactionAbortedException;
-import simpledb.Tuple;
+package simpledb;
 
 import java.util.NoSuchElementException;
 

@@ -1,6 +1,4 @@
-package simpledb.iterator;
-
-import simpledb.*;
+package simpledb;
 
 import java.util.Iterator;
 

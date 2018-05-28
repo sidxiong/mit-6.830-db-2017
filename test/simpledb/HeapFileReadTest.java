@@ -1,6 +1,5 @@
 package simpledb;
 
-import simpledb.iterator.DbFileIterator;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;
 

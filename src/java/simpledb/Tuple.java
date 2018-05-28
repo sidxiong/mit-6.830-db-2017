@@ -97,7 +97,7 @@ public class Tuple implements Serializable {
      * where \t is any whitespace (except a newline)
      */
     public String toString() {
-        return Arrays.stream(fields).map(Field::toString).collect(Collectors.joining("\t"));
+        return Arrays.stream(fields).map(field -> field == null ? " " : field.toString()).collect(Collectors.joining("\t"));
     }
 
     /**

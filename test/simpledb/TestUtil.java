@@ -1,7 +1,5 @@
 package simpledb;
 
-import simpledb.iterator.DbFileIterator;
-
 import java.io.*;
 import java.util.*;
 

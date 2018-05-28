@@ -1,4 +1,4 @@
-package simpledb.iterator;
+package simpledb;
 import simpledb.DbException;
 import simpledb.TransactionAbortedException;
 import simpledb.Tuple;

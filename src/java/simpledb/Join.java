@@ -8,6 +8,11 @@ import java.util.*;
 public class Join extends Operator {
 
     private static final long serialVersionUID = 1L;
+    private JoinPredicate joinPredicate;
+    private OpIterator childOp1;
+    private OpIterator childOp2;
+
+    private Tuple currLhsTuple;
 
     /**
      * Constructor. Accepts two children to join and the predicate to join them
@@ -22,11 +27,16 @@ public class Join extends Operator {
      */
     public Join(JoinPredicate p, OpIterator child1, OpIterator child2) {
         // some code goes here
+        joinPredicate = p;
+        childOp1 = child1;
+        childOp2 = child2;
+
+        currLhsTuple = null;
     }
 
     public JoinPredicate getJoinPredicate() {
         // some code goes here
-        return null;
+        return joinPredicate;
     }
 
     /**
@@ -36,7 +46,8 @@ public class Join extends Operator {
      * */
     public String getJoinField1Name() {
         // some code goes here
-        return null;
+        int idx1 = joinPredicate.getField1();
+        return childOp1.getTupleDesc().getFieldName(idx1);
     }
 
     /**
@@ -46,29 +57,40 @@ public class Join extends Operator {
      * */
     public String getJoinField2Name() {
         // some code goes here
-        return null;
+        int idx2 = joinPredicate.getField2();
+        return childOp2.getTupleDesc().getFieldName(idx2);
     }
 
     /**
-     * @see simpledb.TupleDesc#merge(TupleDesc, TupleDesc) for possible
-     *      implementation logic.
+     * @see TupleDesc#merge
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        TupleDesc td1 = childOp1.getTupleDesc();
+        TupleDesc td2 = childOp2.getTupleDesc();
+        return TupleDesc.merge(td1, td2);
     }
 
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException {
         // some code goes here
+        super.open();
+        childOp1.open();
+        childOp2.open();
     }
 
     public void close() {
         // some code goes here
+        currLhsTuple = null;
+        childOp1.close();
+        childOp2.close();
+        super.close();
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
         // some code goes here
+        close();
+        open();
     }
 
     /**
@@ -91,18 +113,57 @@ public class Join extends Operator {
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         // some code goes here
+
+        // Implementation: Nested loop join (Cartesian product)
+
+        if (currLhsTuple == null) {
+            updateCurrLhsTuple();
+        }
+
+        while (currLhsTuple != null) {
+            while (childOp2.hasNext()) {
+                Tuple rhsTuple = childOp2.next();
+                if (joinPredicate.filter(currLhsTuple, rhsTuple)) {
+                    TupleDesc td = getTupleDesc();
+                    Tuple next = new Tuple(td);
+
+                    Iterator<Field> lhsFields = currLhsTuple.fields();
+                    Iterator<Field> rhsFields = rhsTuple.fields();
+                    int i = 0;
+                    while (lhsFields.hasNext()) {
+                        next.setField(i, lhsFields.next());
+                        i++;
+                    }
+                    while (rhsFields.hasNext()) {
+                        next.setField(i, rhsFields.next());
+                        i++;
+                    }
+                    return next;
+                }
+            }
+
+            childOp2.rewind();
+            updateCurrLhsTuple();
+        }
+
         return null;
+    }
+
+    private void updateCurrLhsTuple() throws DbException, TransactionAbortedException {
+        currLhsTuple = childOp1.hasNext() ? childOp1.next() : null;
     }
 
     @Override
     public OpIterator[] getChildren() {
         // some code goes here
-        return null;
+        return new OpIterator[]{childOp1, childOp2};
     }
 
     @Override
     public void setChildren(OpIterator[] children) {
         // some code goes here
+        childOp1 = children[0];
+        childOp2 = children[1];
     }
 
 }
